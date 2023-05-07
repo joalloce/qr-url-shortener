@@ -1,3 +1,4 @@
+// *ChatGPT made the inline documentation*
 import express, { Request, Response } from "express";
 import sharp from "sharp";
 import QRCode from "qrcode";
@@ -45,7 +46,7 @@ app.get("/:id", (req: Request, res: Response) => {
 
   // If the URL exists, redirect to its original source
   if (url) {
-    res.redirect(url);
+    return res.redirect(url);
   }
 
   // If the URL does not exist, return a 404 error
