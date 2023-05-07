@@ -5,6 +5,7 @@ import QRCode from "qrcode";
 import uniqid from "uniqid";
 import validUrl from "valid-url";
 
+// Create an instance of the Express app and set the port
 const app = express();
 const port = 5000;
 
@@ -59,6 +60,35 @@ app.post("/qrcode", async (req: Request, res: Response) => {
 
   // Generate a QR code as a data URL from the input text
   const qrCode = await QRCode.toDataURL(text);
+
+  // Convert the data URL to a PNG image buffer using Sharp
+  const imageBuffer = await sharp(
+    Buffer.from(qrCode.replace(/^data:image\/\w+;base64,/, ""), "base64")
+  )
+    .png()
+    .toBuffer();
+
+  // Return the PNG image buffer as the response
+  res.writeHead(200, { "Content-Type": "image/png" });
+  res.end(imageBuffer);
+});
+
+// Endpoint to generate QR codes for shortened URLs
+app.post("/qrurlshorten", async (req: Request, res: Response) => {
+  const { url } = req.body;
+
+  // Validate that the input URL is valid
+  if (!validUrl.isUri(url))
+    return res.status(400).json({ error: "Invalid URL" });
+
+  // Generate a unique ID for the URL
+  const id = uniqid();
+
+  // Map the URL to the generated ID
+  urlMap.set(id, url);
+
+  // Generate a QR code for the shortened URL as a data URL
+  const qrCode = await QRCode.toDataURL(`http://localhost:${port}/${id}`);
 
   // Convert the data URL to a PNG image buffer using Sharp
   const imageBuffer = await sharp(
